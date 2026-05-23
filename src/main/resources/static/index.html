@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="top-bar">
+            <div>
+                <p class="eyebrow">Spring Boot REST API</p>
+                <h1>Contact Manager</h1>
+            </div>
+            <div class="top-actions">
+                <span id="currentUser" class="current-user"></span>
+                <button id="refreshButton" type="button">Refresh</button>
+            </div>
+        </section>
+
+        <section id="message" class="message" hidden></section>
+
+        <section class="content-grid">
+            <form id="contactForm" class="contact-form">
+                <h2 id="formTitle">Add Contact</h2>
+                <input id="originalMobileNumber" type="hidden">
+
+                <label>
+                    Mobile Number
+                    <input id="mobileNumber" type="number" min="1" required>
+                </label>
+                <label>
+                    Name
+                    <input id="name" type="text" required>
+                </label>
+                <label>
+                    Gender
+                    <input id="gender" type="text" required>
+                </label>
+                <label>
+                    Type
+                    <select id="type" required>
+                        <option value="Business">Business</option>
+                        <option value="Family">Family</option>
+                        <option value="Friends">Friends</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </label>
+
+                <div class="form-actions">
+                    <button id="submitButton" type="submit">Add Contact</button>
+                    <button id="cancelButton" class="secondary" type="button" hidden>Cancel Edit</button>
+                </div>
+            </form>
+
+            <section class="contacts-panel">
+                <div class="panel-header">
+                    <h2>All Contacts</h2>
+                    <span id="contactCount">0 contacts</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mobile</th>
+                                <th>Name</th>
+                                <th>Gender</th>
+                                <th>Type</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="contactsTableBody"></tbody>
+                    </table>
+                </div>
+                <p id="emptyState" class="empty-state">No contacts available.</p>
+            </section>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
