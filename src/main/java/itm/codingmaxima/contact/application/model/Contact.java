@@ -1,6 +1,8 @@
 package itm.codingmaxima.contact.application.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 
 @Entity
@@ -10,6 +12,7 @@ public class Contact implements Comparable<Contact>{
 	private long mobileNumber;
 	private String name;
 	private String gender;
+	@Enumerated(EnumType.STRING)
 	private ContactType type;
 	
 	public Contact() {}

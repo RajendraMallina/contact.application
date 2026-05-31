@@ -1,87 +1,86 @@
 package itm.codingmaxima.contact.application.service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import itm.codingmaxima.contact.application.model.Contact;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
+import itm.codingmaxima.contact.application.model.Contact;
+import itm.codingmaxima.contact.application.repository.ContactRepository;
+
+@Service
 public class ContactOperationsImpl implements ContactOperations {
 
-	List<Contact> contacts = new ArrayList();
+	@Autowired
+	private ContactRepository contactRepository;
+
 	@Override
-	public boolean addContact(Contact c) {
-		
-		for(Contact cc : contacts) {
-			if(cc.getMobileNumber() == c.getMobileNumber()) {
-				return false;
-			}
-		}	
-		contacts.add(c);
-		return true;	
+	public boolean addContact(Contact contact) {
+
+		if (contactRepository.existsById(contact.getMobileNumber())) {
+			return false;
+		}
+
+		contactRepository.save(contact);
+		return true;
 	}
 
 	@Override
 	public Contact getContact(long mobileNumber) {
-		
-		for(Contact c : contacts) {
-			if(c.getMobileNumber() == mobileNumber) {
-				return c;
-			}
-		}
-		return null;
+		return contactRepository.findById(mobileNumber).orElse(null);
 	}
 
 	@Override
 	public List<Contact> getAllContacts() {
-		return contacts;
+		return contactRepository.findAll();
 	}
 
 	@Override
 	public List<Contact> getContactByName(String name) {
-		List<Contact> list = new ArrayList();
-		
-		for(Contact c : contacts) {
-			if(c.getName().equals(name)) {
-				list.add(c);
-			}
-		}
-		return list;
+		return contactRepository.findByName(name);
 	}
 
 	@Override
 	public boolean deleteContact(long mobileNumber) {
-		
-		Contact c = getContact(mobileNumber);
-		
-		if(c instanceof Contact) {
-			contacts.remove(c);
-			return true;
-		}else {
+
+		if (!contactRepository.existsById(mobileNumber)) {
 			return false;
 		}
+
+		contactRepository.deleteById(mobileNumber);
+		return true;
 	}
 
 	@Override
 	public Contact updateContactName(long mobileNumber, String name) {
-		for(Contact c : contacts) {
-			if(c.getMobileNumber() == mobileNumber) {
-				c.setName(name);
-				return c;
-			}
+
+		Contact contact = contactRepository.findById(mobileNumber)
+				.orElse(null);
+
+		if (contact == null) {
+			return null;
 		}
-		return null;
+
+		contact.setName(name);
+
+		return contactRepository.save(contact);
 	}
 
 	@Override
 	public Contact updateContact(long mobileNumber, Contact contact) {
-		Contact existingContact = getContact(mobileNumber);
-		if(existingContact == null) {
+
+		Contact existingContact = contactRepository.findById(mobileNumber)
+				.orElse(null);
+
+		if (existingContact == null) {
 			return null;
 		}
 
 		long updatedMobileNumber = contact.getMobileNumber();
-		if(updatedMobileNumber != mobileNumber && getContact(updatedMobileNumber) != null) {
+
+		if (updatedMobileNumber != mobileNumber
+				&& contactRepository.existsById(updatedMobileNumber)) {
 			return null;
 		}
 
@@ -89,32 +88,24 @@ public class ContactOperationsImpl implements ContactOperations {
 		existingContact.setName(contact.getName());
 		existingContact.setGender(contact.getGender());
 		existingContact.setType(contact.getType());
-		return existingContact;
+
+		return contactRepository.save(existingContact);
 	}
 
 	@Override
 	public List<Contact> searchContact(String key) {
-		List<Contact> list = new ArrayList();
-		for(Contact c: contacts) {
-			if(c.getName().contains(key)){
-				list.add(c);
-			}
-		}
-		return list;
+		return contactRepository.findByNameContainingIgnoreCase(key);
 	}
 
 	@Override
 	public List<Contact> sortContacts(String property) {
-		
-		List<Contact> list = getAllContacts();
-		if(property.isEmpty()) {
-			Collections.sort(list);
-		}else if(property.equals("name")){
-			Collections.sort(list, new SortByName());
-		}else {
-			return null;
-		}
-		return list;
-	}
 
+		if (property == null || property.isBlank()) {
+			return contactRepository.findAll(
+					Sort.by("mobileNumber"));
+		}
+
+		return contactRepository.findAll(
+				Sort.by(property));
+	}
 }

@@ -2,6 +2,8 @@ package itm.codingmaxima.contact.application.controller;
 
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +17,8 @@ import itm.codingmaxima.contact.application.service.ContactOperationsImpl;
 @Tag(name = "Contact Controller", description = "Contact Management APIs")
 public class ContactController {
 
-	ContactOperations op = new ContactOperationsImpl();
+	@Autowired
+	ContactOperations op;
 
 	@Operation(summary = "Add Contact")
 	@PreAuthorize("hasAnyRole('ADMIN','USER')")
