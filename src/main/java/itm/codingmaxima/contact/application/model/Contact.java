@@ -1,7 +1,12 @@
 package itm.codingmaxima.contact.application.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
+@Entity
 public class Contact implements Comparable<Contact>{
 
+	@Id
 	private long mobileNumber;
 	private String name;
 	private String gender;
