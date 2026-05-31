@@ -1,4 +1,5 @@
 const apiBase = "";
+
 const contactForm = document.getElementById("contactForm");
 const originalMobileNumberInput = document.getElementById("originalMobileNumber");
 const mobileNumberInput = document.getElementById("mobileNumber");
@@ -9,6 +10,7 @@ const formTitle = document.getElementById("formTitle");
 const submitButton = document.getElementById("submitButton");
 const cancelButton = document.getElementById("cancelButton");
 const refreshButton = document.getElementById("refreshButton");
+const logoutButton = document.getElementById("logoutButton");
 const currentUserLabel = document.getElementById("currentUser");
 const tableBody = document.getElementById("contactsTableBody");
 const emptyState = document.getElementById("emptyState");
@@ -18,8 +20,24 @@ const message = document.getElementById("message");
 let contacts = [];
 let currentUser = {
     username: "",
-    admin: false
+    roles: []
 };
+
+function hasRole(role) {
+    return currentUser.roles.includes(`ROLE_${role}`);
+}
+
+function canAdd() {
+    return hasRole("ADMIN") || hasRole("USER");
+}
+
+function canDelete() {
+    return hasRole("ADMIN") || hasRole("MANAGER");
+}
+
+function canUpdate() {
+    return hasRole("USER");
+}
 
 logoutButton.addEventListener("click", async () => {
     await fetch("/logout", {
@@ -50,12 +68,6 @@ async function request(path, options = {}) {
 
     if (!response.ok) {
         throw new Error(`Request failed with status ${response.status}`);
-    }
-
-    const contentType = response.headers.get("Content-Type") || "";
-    if (!contentType.includes("application/json")) {
-        window.location.href = "/login";
-        return null;
     }
 
     const text = await response.text();
@@ -89,6 +101,8 @@ function resetForm() {
     formTitle.textContent = "Add Contact";
     submitButton.textContent = "Add Contact";
     cancelButton.hidden = true;
+
+    contactForm.hidden = !canAdd();
 }
 
 function renderContacts() {
@@ -97,7 +111,11 @@ function renderContacts() {
     contactCount.textContent = `${contacts.length} ${contacts.length === 1 ? "contact" : "contacts"}`;
 
     contacts.forEach((contact) => {
-        const deleteButton = currentUser.admin
+        const editButton = canUpdate()
+            ? `<button type="button" data-action="edit" data-mobile="${contact.mobileNumber}">Edit</button>`
+            : "";
+
+        const deleteButton = canDelete()
             ? `<button class="danger" type="button" data-action="delete" data-mobile="${contact.mobileNumber}">Delete</button>`
             : "";
 
@@ -108,7 +126,7 @@ function renderContacts() {
             <td>${escapeHtml(contact.gender)}</td>
             <td>${escapeHtml(contact.type)}</td>
             <td class="actions">
-                <button type="button" data-action="edit" data-mobile="${contact.mobileNumber}">Edit</button>
+                ${editButton}
                 ${deleteButton}
             </td>
         `;
@@ -128,28 +146,29 @@ function escapeHtml(value) {
 async function loadContacts() {
     clearMessage();
     contacts = await request("/contact/getall");
-    if (!contacts) {
-        return;
-    }
-    renderContacts();
+    if (contacts) renderContacts();
 }
 
 async function loadCurrentUser() {
     currentUser = await request("/contact/user");
-    if (!currentUser) {
-        return;
+
+    if (!currentUser.roles) {
+        currentUser.roles = currentUser.admin ? ["ROLE_ADMIN"] : ["ROLE_USER"];
     }
 
-    currentUserLabel.textContent = currentUser.admin
-        ? `${currentUser.username} (Admin)`
-        : `${currentUser.username} (User)`;
+    currentUserLabel.textContent = `${currentUser.username} (${currentUser.roles.join(", ")})`;
+
+    contactForm.hidden = !canAdd();
 }
 
 function startEdit(mobileNumber) {
-    const contact = contacts.find((item) => item.mobileNumber === mobileNumber);
-    if (!contact) {
+    if (!canUpdate()) {
+        showMessage("Only USER role can update contacts.", "error");
         return;
     }
+
+    const contact = contacts.find((item) => item.mobileNumber === mobileNumber);
+    if (!contact) return;
 
     originalMobileNumberInput.value = contact.mobileNumber;
     mobileNumberInput.value = contact.mobileNumber;
@@ -166,9 +185,7 @@ async function deleteContact(mobileNumber) {
         method: "DELETE"
     });
 
-    if (!deleted) {
-        throw new Error("Contact was not deleted.");
-    }
+    if (!deleted) throw new Error("Contact was not deleted.");
 
     showMessage("Contact deleted.");
     await loadContacts();
@@ -182,27 +199,31 @@ contactForm.addEventListener("submit", async (event) => {
         const originalMobileNumber = originalMobileNumberInput.value;
 
         if (originalMobileNumber) {
+            if (!canUpdate()) {
+                throw new Error("Only USER role can update contacts.");
+            }
+
             const updated = await request(`/contact/update/${originalMobileNumber}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(contact)
             });
 
-            if (!updated) {
-                throw new Error("Contact was not updated. The new mobile number may already exist.");
-            }
+            if (!updated) throw new Error("Contact was not updated.");
 
             showMessage("Contact updated.");
         } else {
+            if (!canAdd()) {
+                throw new Error("Only ADMIN or USER can add contacts.");
+            }
+
             const added = await request("/contact/add", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(contact)
             });
 
-            if (!added) {
-                throw new Error("Contact already exists with this mobile number.");
-            }
+            if (!added) throw new Error("Contact already exists.");
 
             showMessage("Contact added.");
         }
@@ -216,11 +237,10 @@ contactForm.addEventListener("submit", async (event) => {
 
 tableBody.addEventListener("click", async (event) => {
     const button = event.target.closest("button");
-    if (!button) {
-        return;
-    }
+    if (!button) return;
 
     const mobileNumber = Number(button.dataset.mobile);
+
     if (button.dataset.action === "edit") {
         startEdit(mobileNumber);
         return;

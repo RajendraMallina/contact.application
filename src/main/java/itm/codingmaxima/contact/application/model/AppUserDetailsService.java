@@ -4,20 +4,27 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
-public class UserPrincipal implements UserDetails {
+public class AppUserDetailsService implements UserDetails {
 
     private PhoneBookUser user;
 
-    public UserPrincipal(PhoneBookUser user) {
+    private List<AppRole> roles;
+
+    public AppUserDetailsService(PhoneBookUser user) {
         this.user = user;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("USER"));
+
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        Set<AppRole> roles = user.getRoles();
+        for(AppRole role: roles){
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleName()));
+        }
+        return authorities;
     }
 
     @Override
