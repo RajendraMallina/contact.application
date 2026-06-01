@@ -20,6 +20,7 @@ public class PhoneBookUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         PhoneBookUser user = phoneBookUserRepository.findByName(username);
+        System.out.println(user);
         if (user == null) {
 
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with username: " + username);

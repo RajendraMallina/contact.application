@@ -45,4 +45,11 @@ public class AppRole {
         return Objects.hashCode(id);
     }
 
+    @Override
+    public String toString() {
+        return "AppRole{" +
+                "id=" + id +
+                ", role='" + role + '\'' +
+                '}';
+    }
 }

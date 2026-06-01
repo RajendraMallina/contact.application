@@ -24,7 +24,7 @@ let currentUser = {
 };
 
 function hasRole(role) {
-    return currentUser.roles.includes(`ROLE_${role}`);
+    return currentUser.role === `ROLE_${role}`;
 }
 
 function canAdd() {
@@ -152,11 +152,11 @@ async function loadContacts() {
 async function loadCurrentUser() {
     currentUser = await request("/contact/user");
 
-    if (!currentUser.roles) {
-        currentUser.roles = currentUser.admin ? ["ROLE_ADMIN"] : ["ROLE_USER"];
+    if (!currentUser.role) {
+        currentUser.role = "NO_ROLE";
     }
 
-    currentUserLabel.textContent = `${currentUser.username} (${currentUser.roles.join(", ")})`;
+    currentUserLabel.textContent = `${currentUser.username} (${currentUser.role})`;
 
     contactForm.hidden = !canAdd();
 }

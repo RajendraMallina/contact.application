@@ -50,12 +50,15 @@ public class ContactController {
 	@GetMapping("/contact/user")
 	public Map<String, Object> getCurrentUser(Authentication authentication) {
 
-		boolean admin = authentication.getAuthorities().stream()
-				.anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+		String role = authentication.getAuthorities()
+				.stream()
+				.map(authority -> authority.getAuthority())
+				.findFirst()
+				.orElse("NO_ROLE");
 
 		return Map.of(
 				"username", authentication.getName(),
-				"admin", admin
+				"role", role
 		);
 	}
 
