@@ -6,13 +6,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.*;
 
-public class AppUserDetailsService implements UserDetails {
+public class AppUserDetails implements UserDetails {
 
     private PhoneBookUser user;
 
     private List<AppRole> roles;
 
-    public AppUserDetailsService(PhoneBookUser user) {
+    public AppUserDetails(PhoneBookUser user) {
         this.user = user;
     }
 
