@@ -1,7 +1,7 @@
 package itm.codingmaxima.contact.application.service;
 
 import itm.codingmaxima.contact.application.model.PhoneBookUser;
-import itm.codingmaxima.contact.application.model.AppUserDetailsService;
+import itm.codingmaxima.contact.application.model.AppUserDetails;
 import itm.codingmaxima.contact.application.repository.PhoneBookUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +26,6 @@ public class PhoneBookUserDetailsService implements UserDetailsService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with username: " + username);
         }
 
-        return new AppUserDetailsService(user);
+        return new AppUserDetails(user);
     }
 }
