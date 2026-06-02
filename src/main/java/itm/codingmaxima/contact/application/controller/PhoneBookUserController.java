@@ -28,6 +28,7 @@ public class PhoneBookUserController {
             method = RequestMethod.POST
     )
     public String generateJWTToken(@RequestBody LogInUserDto logInUserDto){
+        System.out.println("hello");
         return phoneBookUserService.generateLoginToken(logInUserDto);
     }
 }

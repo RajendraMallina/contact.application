@@ -85,7 +85,7 @@ public class PhoneBookUserService {
 
             return jwtService.generateToken(phoneBookUser);
         }else{
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token Generation failed. Please check data");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Token Generation failed");
         }
     }
 }
