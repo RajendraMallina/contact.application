@@ -18,7 +18,7 @@ public class PhoneBookUserDetailsService implements UserDetailsService {
     PhoneBookUserRepository phoneBookUserRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public AppUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         PhoneBookUser user = phoneBookUserRepository.findByName(username);
         System.out.println(user);
         if (user == null) {

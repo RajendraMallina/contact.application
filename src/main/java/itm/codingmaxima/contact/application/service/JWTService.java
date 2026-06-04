@@ -1,8 +1,10 @@
 package itm.codingmaxima.contact.application.service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import itm.codingmaxima.contact.application.model.AppRole;
+import itm.codingmaxima.contact.application.model.AppUserDetails;
 import itm.codingmaxima.contact.application.model.PhoneBookUser;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class JWTService {
@@ -50,4 +53,31 @@ public class JWTService {
         return Keys.hmacShaKeyFor(bytesKey);
     }
 
+    public String extractUserName(String jwtToken) {
+       return extractClaims(jwtToken, Claims::getSubject);
+    }
+
+    public <T> T extractClaims(String token, Function<Claims, T> typeOfClaim){
+
+        Claims claims = Jwts.parser()
+                .verifyWith(getKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return typeOfClaim.apply(claims);
+    }
+
+    public boolean validateToken(String jwtToken, AppUserDetails userDetails) {
+        String userName = extractUserName(jwtToken);
+        if(userName.equals(userDetails.getUsername()) && !isTokenExpired(jwtToken)){
+            return  true;
+        }else{
+            return false;
+        }
+    }
+
+    private boolean isTokenExpired(String jwtToken) {
+        Date expireDate = extractClaims(jwtToken, Claims::getExpiration);
+        return expireDate.before(new Date());
+    }
 }

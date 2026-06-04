@@ -1,12 +1,16 @@
 package itm.codingmaxima.contact.application.service;
 
 import itm.codingmaxima.contact.application.model.AppRole;
+import itm.codingmaxima.contact.application.model.AppUserDetails;
 import itm.codingmaxima.contact.application.model.PhoneBookUser;
 import itm.codingmaxima.contact.application.model.TokenUserDto;
 import itm.codingmaxima.contact.application.repository.AppRoleRepository;
 import itm.codingmaxima.contact.application.repository.PhoneBookUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,6 +34,9 @@ public class PhoneBookUserService {
 
     @Autowired
     private JWTService jwtService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public PhoneBookUser register(PhoneBookUser user) {
 
@@ -62,11 +69,21 @@ public class PhoneBookUserService {
     }
 
     public String generateToken(TokenUserDto tokenUserDto){
-       PhoneBookUser user = phoneBookUserRepository.findByName(tokenUserDto.getUserName());
-       if(user != null){
-           return jwtService.generateToken(user);
-       }else{
-           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found to generate token " + tokenUserDto.getUserName());
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        tokenUserDto.getUserName(),
+                        tokenUserDto.getPassword()
+                )
+        );
+
+        if(authentication.isAuthenticated()) {
+            AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+            PhoneBookUser user = userDetails.getUser();
+            return jwtService.generateToken(user);
+
+        }else{
+           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "user may not found or invalid details to generate token " + tokenUserDto.getUserName());
        }
 
     }
