@@ -2,6 +2,7 @@ package itm.codingmaxima.contact.application.service;
 
 import itm.codingmaxima.contact.application.model.AppRole;
 import itm.codingmaxima.contact.application.model.PhoneBookUser;
+import itm.codingmaxima.contact.application.model.TokenUserDto;
 import itm.codingmaxima.contact.application.repository.AppRoleRepository;
 import itm.codingmaxima.contact.application.repository.PhoneBookUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class PhoneBookUserService {
 
     @Autowired
     private AppRoleRepository appRoleRepository;
+
+    @Autowired
+    private JWTService jwtService;
 
     public PhoneBookUser register(PhoneBookUser user) {
 
@@ -55,5 +59,15 @@ public class PhoneBookUserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         phoneBookUserRepository.save(user);
         return user;
+    }
+
+    public String generateToken(TokenUserDto tokenUserDto){
+       PhoneBookUser user = phoneBookUserRepository.findByName(tokenUserDto.getUserName());
+       if(user != null){
+           return jwtService.generateToken(user);
+       }else{
+           throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found to generate token " + tokenUserDto.getUserName());
+       }
+
     }
 }

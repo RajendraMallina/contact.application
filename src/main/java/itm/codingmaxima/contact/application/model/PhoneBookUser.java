@@ -25,6 +25,7 @@ public class PhoneBookUser {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<AppRole> roles = new HashSet<>();
+
     public PhoneBookUser() {}
 
     public PhoneBookUser(int id, String name, String email, String password) {

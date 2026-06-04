@@ -3,6 +3,7 @@ package itm.codingmaxima.contact.application.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import itm.codingmaxima.contact.application.model.PhoneBookUser;
+import itm.codingmaxima.contact.application.model.TokenUserDto;
 import itm.codingmaxima.contact.application.service.PhoneBookUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,5 +23,11 @@ public class PhoneBookUserController {
     public PhoneBookUser registerNewUser(@RequestBody PhoneBookUser user)
     {
         return phoneBookUserService.register(user);
+    }
+
+
+    @PostMapping(value = {"/generateToken", "/user/login"})
+    public String generateToken(@RequestBody TokenUserDto user){
+        return phoneBookUserService.generateToken(user);
     }
 }
